@@ -11,6 +11,7 @@ public class dbload implements dbimpl {
 
     /**
      * ##NEW CODE##
+     * https://beginnersbook.com/2014/07/hashtable-in-java-with-example/
      * function creates a hash index for the given record and page number
      */
     private byte[] appendhashIndex(int pIndex, int rIndex, String bName) {
@@ -27,9 +28,33 @@ public class dbload implements dbimpl {
     }
 
     private void readWriteHash(byte[] hashIndex){
+        boolean isNextBucket = true;
+        boolean isNextHash = true;
         File heapfile = new File(HEAP_FNAME + pagesize + ".hash");
-        BufferedReader br = null;
+        FileInputStream fis = null;
         FileOutputStream fos = null;
+        byte[] bBucket = new byte[100];
+        try{
+            while(isNextBucket){
+                fis.read(bBucket, 0, 100);
+                isNextHash = true;
+                while(isNextHash){
+                    byte[] Bhash = new byte[3];
+                    try{
+                        
+                    }catch (ArrayIndexOutOfBoundsException e){
+
+                    }
+                }
+            }
+        }catch (FileNotFoundException e){
+           System.out.println("File: " + HEAP_FNAME + pagesize + ".hash" + " not found.");
+        }
+        catch (IOException e){
+           e.printStackTrace();
+        }
+        
+
     }
 
 
