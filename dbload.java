@@ -13,6 +13,8 @@ public class dbload implements dbimpl {
      * ##NEW CODE##
      * http://bigdatums.net/2016/07/19/how-to-create-a-hash-table-in-java-chaining-example/
      * function creates a hash index for the given record and page number
+     * 
+     * Creates a hash record
      */
     private byte[] appendhashIndex(int pIndex, int rIndex, String bName) {
         byte[] hashIndexItem = new byte[3];
@@ -22,11 +24,21 @@ public class dbload implements dbimpl {
         return hashIndexItem;
     }
 
+    /**
+     * This creates a bucket used to handel collisons
+     */
     private byte[] createHashBucket(){
         byte[] hashIndexBuck = new byte[100];
         return hashIndexBuck;
     }
 
+    /**
+     * The Idea of this funciton is to read the hash file and write to it every time we want to add a new hash index
+     * rather then storing the whole table in RAM then saving it
+     * so for each record we read, we create a hash, open the hash file go through the first element of each
+     * bucket to check if it already exists, if it does then we add it to the bucket, if it doesnt then we create a new bucket
+     * we repeat until we have hashed all the data
+     */
     private void readWriteHash(byte[] hashIndex){
         boolean isNextBucket = true;
         boolean isNextHash = true;
