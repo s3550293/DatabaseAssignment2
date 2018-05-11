@@ -11,7 +11,7 @@ public class dbload implements dbimpl {
 
     /**
      * ##NEW CODE##
-     * https://beginnersbook.com/2014/07/hashtable-in-java-with-example/
+     * http://bigdatums.net/2016/07/19/how-to-create-a-hash-table-in-java-chaining-example/
      * function creates a hash index for the given record and page number
      */
     private byte[] appendhashIndex(int pIndex, int rIndex, String bName) {
