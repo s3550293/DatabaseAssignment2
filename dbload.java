@@ -18,7 +18,7 @@ public class dbload implements dbimpl {
      */
     private byte[] appendhashIndex(int pIndex, int rIndex, String bName) {
         byte[] hashIndexItem = new byte[3];
-        hashIndexItem[0] = ((5463342 * Integer.toInt(bName) + 5463245) % 175454) % 100;
+        hashIndexItem[0] = ((5463342 * Integer.toInt(bName) + 5463245) % 175454) % 93;
         hashIndexItem[1] = pIndex;
         hashIndexItem[2] = rIndex;
         return hashIndexItem;
@@ -28,7 +28,9 @@ public class dbload implements dbimpl {
      * This creates a bucket used to handel collisons
      */
     private byte[] createHashBucket(){
-        byte[] hashIndexBuck = new byte[100];
+        byte[] hashIndexBuck = new byte[102];
+        hashIndexBuck[0] = null;
+        hashIndexBuck[101] = null;
         return hashIndexBuck;
     }
 
@@ -65,8 +67,43 @@ public class dbload implements dbimpl {
         catch (IOException e){
            e.printStackTrace();
         }
-        
+    }
 
+    private addIndexToBucket(byte[] hashBucket, byte[] hashIndex){
+        boolean loop = true;
+        index = 1;
+        byte[] tempHash = null;
+        while(loop){
+            tempHash = hashBucket[index];
+            if(tempHash[0] == hashIndex[0]){
+                //Add to the bucket and break
+            }else{
+                // Loop to the next bucket
+            }
+            // if(Bucket[101] == null){
+            //     //Create new bucket and add hashindex to bucket and break
+            // }
+            index++;
+            if(index == 101){
+                // go to the next bucket
+                // or if bucket index is null then reset to 1
+            }
+        }
+    }
+
+    private writeHash(byte[] hashIndex){
+        File hashfile = new File(HEAP_FNAME + pagesize + ".hash");
+        FileOutputStream fos = null;
+        try{
+            fos = new FileOutputStream(hashfile);
+            fos.write(hashIndex);
+        } catch (FileNotFoundException e) {
+            System.out.println("File: " + hashfile + " not found.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            fos.close();
+        }
     }
 
 
