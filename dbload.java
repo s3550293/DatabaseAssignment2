@@ -9,6 +9,8 @@ import java.nio.ByteBuffer;
 
 public class dbload implements dbimpl {
 
+    private int pagesize;
+
     /**
      * ##NEW CODE##
      * http://bigdatums.net/2016/07/19/how-to-create-a-hash-table-in-java-chaining-example/
@@ -16,23 +18,29 @@ public class dbload implements dbimpl {
      * 
      * Creates a hash record
      */
-    private byte[] appendhashIndex(int pIndex, int rIndex, String bName) {
-        byte[] hashIndexItem = new byte[3];
-        hashIndexItem[0] = ((5463342 * Integer.toInt(bName) + 5463245) % 175454) % 93;
-        hashIndexItem[1] = pIndex;
-        hashIndexItem[2] = rIndex;
-        return hashIndexItem;
+    // private int[] appendhashIndex(int pIndex, int pIndex, String bName) {
+    //     byte[] hashIndexItem = new byte[3];
+    //     hashIndexItem[0] = ((5463342 * Integer.parseInt(bName) + 5463245) % 175454) % 93;
+    //     hashIndexItem[1] = intToByteArray(pIndex);
+    //     hashIndexItem[2] = Integer.parseInt(bName);
+    //     return hashIndexItem;
+    // }
+
+    private byte[] createHash(byte[] hash, String search, int offset){
+        int hashcode = search.hashcode() % 4000
+        System.arraycopy(hashcode.getBytes(),0,hash,HASH_OFFSET,hashcode.getBytes().length);
+        System.arraycopy(offset.getBytes(),0,hash,HASH_OFFSET,hashcode.getBytes().length);
     }
 
     /**
      * This creates a bucket used to handel collisons
      */
-    private byte[] createHashBucket(){
-        byte[] hashIndexBuck = new byte[102];
-        hashIndexBuck[0] = null;
-        hashIndexBuck[101] = null;
-        return hashIndexBuck;
-    }
+    // private int[][] createHashBucket(){
+    //     int[][] hashIndexBuck = new int[102][];
+    //     hashIndexBuck[0] = null;
+    //     hashIndexBuck[101] = null;
+    //     return hashIndexBuck;
+    // }
 
     /**
      * The Idea of this funciton is to read the hash file and write to it every time we want to add a new hash index
@@ -41,44 +49,44 @@ public class dbload implements dbimpl {
      * bucket to check if it already exists, if it does then we add it to the bucket, if it doesnt then we create a new bucket
      * we repeat until we have hashed all the data
      */
-    private void readWriteHash(byte[] hashIndex){
-        boolean isNextBucket = true;
-        boolean isNextHash = true;
-        File heapfile = new File(HEAP_FNAME + pagesize + ".hash");
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
-        byte[] bBucket = new byte[100];
-        try{
-            while(isNextBucket){
-                fis.read(bBucket, 0, 100);
-                isNextHash = true;
-                while(isNextHash){
-                    byte[] Bhash = new byte[3];
-                    try{
+    // private void readWriteHash(byte[][] hashIndex){
+    //     boolean isNextBucket = true;
+    //     boolean isNextHash = true;
+    //     File heapfile = new File(HEAP_FNAME + pagesize + ".hash");
+    //     FileInputStream fis = null;
+    //     FileOutputStream fos = null;
+    //     byte[][] bBucket = new byte[100][];
+    //     try{
+    //         while(isNextBucket){
+    //             fis.read(bBucket, 0, 100);
+    //             isNextHash = true;
+    //             while(isNextHash){
+    //                 byte[][] Bhash = new byte[3][];
+    //                 try{
                         
-                    }catch (ArrayIndexOutOfBoundsException e){
+    //                 }catch (ArrayIndexOutOfBoundsException e){
 
-                    }
-                }
-            }
-        }catch (FileNotFoundException e){
-           System.out.println("File: " + HEAP_FNAME + pagesize + ".hash" + " not found.");
-        }
-        catch (IOException e){
-           e.printStackTrace();
-        }
-    }
+    //                 }
+    //             }
+    //         }
+    //     }catch (FileNotFoundException e){
+    //        System.out.println("File: " + HEAP_FNAME + pagesize + ".hash" + " not found.");
+    //     }
+    //     catch (IOException e){
+    //        e.printStackTrace();
+    //     }
+    // }
 
-    private addIndexToBucket(byte[] hashBucket, byte[] hashIndex){
+    private void addIndexToBucket(byte[][] hashBucket, byte[][] hashIndex){
         boolean loop = true;
-        index = 1;
-        byte[] tempHash = null;
+        int index = 1;
+        byte[][] tempHash = null;
         while(loop){
             tempHash = hashBucket[index];
             if(tempHash[0] == hashIndex[0]){
-                //Add to the bucket and break
-            }else{
-                // Loop to the next bucket
+                if(hashBucket[index] == null){
+                    hashBucket[index] = hashIndex;
+                }
             }
             // if(Bucket[101] == null){
             //     //Create new bucket and add hashindex to bucket and break
@@ -91,7 +99,7 @@ public class dbload implements dbimpl {
         }
     }
 
-    private writeHash(byte[] hashIndex){
+    private void  writeHash(byte[][] hashIndex){
         File hashfile = new File(HEAP_FNAME + pagesize + ".hash");
         FileOutputStream fos = null;
         try{
@@ -146,6 +154,7 @@ public class dbload implements dbimpl {
     public void readFile(String filename, int pagesize) {
         dbload load = new dbload();
         File heapfile = new File(HEAP_FNAME + pagesize);
+        this.pagesize = pagesize;
         BufferedReader br = null;
         FileOutputStream fos = null;
         String line = "";
