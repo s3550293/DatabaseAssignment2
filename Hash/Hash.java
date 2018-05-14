@@ -6,8 +6,8 @@ public class Hash implements Serializable{
     int hashVal,offset;
     String name;
 
-    public Hash(String name, int offset){
-        hashVal = name.hashCode() % 3940;
+    public Hash(int hashVal, String name, int offset){
+        this.hashVal = hashVal;
         this.name = name;
         this.offset = offset;
     }

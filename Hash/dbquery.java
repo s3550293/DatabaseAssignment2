@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.ObjectInputStream;
 
 /**
  *  Database Systems - HEAP IMPLEMENTATION
@@ -60,54 +61,80 @@ public class dbquery implements dbimpl
    public void readHeap(String name, int pagesize)
    {
       File heapfile = new File(HEAP_FNAME + pagesize);
+      File hashfile = new File(HASH_FNAME + pagesize);
       int intSize = 4;
       int pageCount = 0;
+      int page = 0;
       int recCount = 0;
       int recordLen = 0;
       int rid = 0;
+      int key = name.hashCode() % 3940;
       boolean isNextPage = true;
       boolean isNextRecord = true;
+      boolean loop = true;
       try
       {
-         FileInputStream fis = new FileInputStream(heapfile);
+        FileInputStream fis = new FileInputStream(hashfile);
+        ObjectInputStream input = new ObjectInputStream(fis);
+        while(loop){
+            try{
+                Hash hash = (Hash) input.readObject();
+                if(key == hash.hashVal){
+                    while(hash.next != null){
+                        if(hash.name.equals(name)){
+                            page = hash.offset;
+                            loop = false;
+                        }else{
+                            hash = hash.next;
+                        }
+                    }
+                }
+            }catch (ClassNotFoundException cnfe){
+
+            }
+        }
+
+        fis = new FileInputStream(heapfile);
          // reading page by page
          while (isNextPage)
          {
             byte[] bPage = new byte[pagesize];
             byte[] bPageNum = new byte[intSize];
             fis.read(bPage, 0, pagesize);
-            System.arraycopy(bPage, bPage.length-intSize, bPageNum, 0, intSize);
+            if(pageCount == page){
+                System.arraycopy(bPage, bPage.length-intSize, bPageNum, 0, intSize);
 
-            // reading by record, return true to read the next record
-            isNextRecord = true;
-            while (isNextRecord)
-            {
-               byte[] bRecord = new byte[RECORD_SIZE];
-               byte[] bRid = new byte[intSize];
-               try
-               {
-                  System.arraycopy(bPage, recordLen, bRecord, 0, RECORD_SIZE);
-                  System.arraycopy(bRecord, 0, bRid, 0, intSize);
-                  rid = ByteBuffer.wrap(bRid).getInt();
-                  if (rid != recCount)
-                  {
-                     isNextRecord = false;
-                  }
-                  else
-                  {
-                     printRecord(bRecord, name);
-                     recordLen += RECORD_SIZE;
-                  }
-                  recCount++;
-                  // if recordLen exceeds pagesize, catch this to reset to next page
-               }
-               catch (ArrayIndexOutOfBoundsException e)
-               {
-                  isNextRecord = false;
-                  recordLen = 0;
-                  recCount = 0;
-                  rid = 0;
-               }
+                // reading by record, return true to read the next record
+                isNextRecord = true;
+                while (isNextRecord)
+                {
+                    byte[] bRecord = new byte[RECORD_SIZE];
+                    byte[] bRid = new byte[intSize];
+                    try
+                    {
+                        System.arraycopy(bPage, recordLen, bRecord, 0, RECORD_SIZE);
+                        System.arraycopy(bRecord, 0, bRid, 0, intSize);
+                        rid = ByteBuffer.wrap(bRid).getInt();
+                        if (rid != recCount)
+                        {
+                            isNextRecord = false;
+                        }
+                        else
+                        {
+                            printRecord(bRecord, name);
+                            recordLen += RECORD_SIZE;
+                        }
+                        recCount++;
+                        // if recordLen exceeds pagesize, catch this to reset to next page
+                    }
+                    catch (ArrayIndexOutOfBoundsException e)
+                    {
+                        isNextRecord = false;
+                        recordLen = 0;
+                        recCount = 0;
+                        rid = 0;
+                    }
+                }
             }
             // check to complete all pages
             if (ByteBuffer.wrap(bPageNum).getInt() != pageCount)
@@ -115,6 +142,9 @@ public class dbquery implements dbimpl
                isNextPage = false;
             }
             pageCount++;
+            if(pageCount > page){
+                break;
+            }
          }
       }
       catch (FileNotFoundException e)

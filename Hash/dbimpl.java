@@ -6,6 +6,7 @@ public interface dbimpl
 {
 
    public static final String HEAP_FNAME = "heap.";
+   public static final String HASH_FNAME = "hash.";
    public static final String ENCODING = "utf-8";
 
    // fixed/variable lengths

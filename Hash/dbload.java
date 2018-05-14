@@ -59,6 +59,7 @@ public class dbload implements dbimpl
    {
       dbload load = new dbload();
       File heapfile = new File(HEAP_FNAME + pagesize);
+      File hashfile = new File(HASH_FNAME + pagesize);
       BufferedReader br = null;
       FileOutputStream fos = null;
       String line = "";
@@ -77,7 +78,7 @@ public class dbload implements dbimpl
          while ((line = br.readLine()) != null)
          {
             String[] entry = line.split(stringDelimeter, -1);
-            RECORD = createRecord(RECORD, entry, outCount);
+            RECORD = createRecord(RECORD, entry, outCount, pageCount);
             // outCount is to count record and reset everytime
             // the number of bytes has exceed the pagesize
             outCount++;
@@ -90,6 +91,16 @@ public class dbload implements dbimpl
                pageCount++;
             }
             recCount++;
+         }
+         fos = new FileOutputStream(hashfile);
+         ObjectOutputStream oos = new ObjectOutputStream(fos);
+        //  oos.writeObject(hashtable);
+         for(int i=0;i<hashtable.length;i++){
+            if(hashtable[i] != null){
+                oos.writeObject(hashtable[i]);
+            }else{
+                break;
+            }
          }
       }
       catch (FileNotFoundException e)
@@ -121,6 +132,7 @@ public class dbload implements dbimpl
             }
          }
       }
+
       System.out.println("Page total: " + pageCount);
       System.out.println("Record total: " + recCount);
    }
@@ -142,9 +154,9 @@ public class dbload implements dbimpl
 
    // creates record by appending using array copy and then applying offset
    // where neccessary
-   public byte[] createRecord(byte[] rec, String[] entry, int out)
+   public byte[] createRecord(byte[] rec, String[] entry, int out, int pageCount)
           throws UnsupportedEncodingException 
-   {
+    {
       byte[] RID = intToByteArray(out);
       System.arraycopy(RID, 0, rec, 0, RID.length);
 
@@ -166,6 +178,8 @@ public class dbload implements dbimpl
 
       copy(entry[8], BN_ABN_SIZE, BN_ABN_OFFSET, rec);
 
+      addHash(entry[1], pageCount);
+
       return rec;
    }
 
@@ -186,5 +200,18 @@ public class dbload implements dbimpl
       ByteBuffer bBuffer = ByteBuffer.allocate(4);
       bBuffer.putInt(i);
       return bBuffer.array();
+   }
+
+   public void addHash(String name, int pageCount){
+       int hashval = name.hashCode() % 3940;
+       for(int i=0;i<hashtable.length;i++){
+           if(hashtable[i] == null){
+                hashtable[i] = new Hash(hashval, name.toString(),pageCount);
+                break;
+           }else if(hashtable[i].hashVal == hashval){
+                hashtable[i].put(hashtable[i], new Hash(hashval, name ,pageCount));
+                break;
+            }
+       }
    }
 }
