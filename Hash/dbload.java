@@ -8,11 +8,12 @@ import java.nio.ByteBuffer;
 
 public class dbload implements dbimpl
 {
+    private Hash[] hashtable = new Hash[3940];
     // initialize
    public static void main(String args[])
    {
       dbload load = new dbload();
-
+    
       // calculate load time
       long startTime = System.currentTimeMillis();
       load.readArguments(args);

@@ -13,7 +13,6 @@ public class dbload implements dbimpl {
 
     /**
      * ##NEW CODE##
-     * http://bigdatums.net/2016/07/19/how-to-create-a-hash-table-in-java-chaining-example/
      * function creates a hash index for the given record and page number
      * 
      * Creates a hash record
