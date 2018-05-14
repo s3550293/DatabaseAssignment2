@@ -62,6 +62,7 @@ public class dbload implements dbimpl
       File hashfile = new File(HASH_FNAME + pagesize);
       BufferedReader br = null;
       FileOutputStream fos = null;
+      FileOutputStream fos_Hash = null;
       String line = "";
       String nextLine = "";
       String stringDelimeter = "\t";
@@ -92,9 +93,8 @@ public class dbload implements dbimpl
             }
             recCount++;
          }
-         fos = new FileOutputStream(hashfile);
-         ObjectOutputStream oos = new ObjectOutputStream(fos);
-        //  oos.writeObject(hashtable);
+         fos_Hash = new FileOutputStream(hashfile);
+         ObjectOutputStream oos = new ObjectOutputStream(fos_Hash);
          for(int i=0;i<hashtable.length;i++){
             if(hashtable[i] != null){
                 oos.writeObject(hashtable[i]);
@@ -124,6 +124,7 @@ public class dbload implements dbimpl
                   pageCount++;
                }
                fos.close();
+               fos_Hash.close();
                br.close();
             }
             catch (IOException e)

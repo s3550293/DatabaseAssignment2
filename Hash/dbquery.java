@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.io.EOFException;
 
 /**
  *  Database Systems - HEAP IMPLEMENTATION
@@ -74,28 +75,37 @@ public class dbquery implements dbimpl
       boolean loop = true;
       try
       {
-        FileInputStream fis = new FileInputStream(hashfile);
-        ObjectInputStream input = new ObjectInputStream(fis);
-        while(loop){
-            try{
-                Hash hash = (Hash) input.readObject();
-                if(key == hash.hashVal){
-                    while(hash.next != null){
-                        if(hash.name.equals(name)){
-                            page = hash.offset;
-                            loop = false;
-                        }else{
-                            hash = hash.next;
+        FileInputStream fis = null;
+        try{
+            fis = new FileInputStream(hashfile);
+            Object obj = null;
+            ObjectInputStream input = new ObjectInputStream(fis);
+            while (loop){
+                obj = input.readObject();
+                if (obj instanceof Hash) {
+                    Hash hash = (Hash) obj;
+                    if(key == hash.hashVal){
+                        while(loop){
+                            if(hash.name.equals(name)){
+                                page = hash.offset;
+                                loop = false;
+                            }else if(hash.next == null){
+                                loop = false;
+                            }else{
+                                hash = hash.next;
+                            }
                         }
                     }
                 }
-            }catch (ClassNotFoundException cnfe){
-
             }
+        }catch (ClassNotFoundException cnfe){}
+        catch (EOFException eof){
+            System.out.println("End of file, record not found");
         }
-
+        
         fis = new FileInputStream(heapfile);
          // reading page by page
+         boolean exit = false;
          while (isNextPage)
          {
             byte[] bPage = new byte[pagesize];
@@ -121,8 +131,11 @@ public class dbquery implements dbimpl
                         }
                         else
                         {
-                            printRecord(bRecord, name);
+                            exit = printRecord(bRecord, name);
                             recordLen += RECORD_SIZE;
+                            if(exit){
+                                return;
+                            }
                         }
                         recCount++;
                         // if recordLen exceeds pagesize, catch this to reset to next page
@@ -142,9 +155,6 @@ public class dbquery implements dbimpl
                isNextPage = false;
             }
             pageCount++;
-            if(pageCount > page){
-                break;
-            }
          }
       }
       catch (FileNotFoundException e)
@@ -158,7 +168,7 @@ public class dbquery implements dbimpl
    }
 
    // returns records containing the argument text from shell
-   public void printRecord(byte[] rec, String input)
+   public boolean printRecord(byte[] rec, String input)
    {
       String record = new String(rec);
       String BN_NAME = record
@@ -167,6 +177,8 @@ public class dbquery implements dbimpl
       if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
       {
          System.out.println(record);
+         return true;
       }
+      return false;
    }
 }

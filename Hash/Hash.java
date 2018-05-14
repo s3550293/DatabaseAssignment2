@@ -1,6 +1,7 @@
 import java.io.Serializable;
 
 public class Hash implements Serializable{
+    private static final long serialVersionUID = -5302010108271068350L;
     // Hash prev = null;
     Hash next = null;
     int hashVal,offset;
