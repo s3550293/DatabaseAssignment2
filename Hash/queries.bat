@@ -1,4 +1,4 @@
-java dbquery "shade matters" 4096
-java dbquery "SWORDFISH CONSTRUCTIONS" 4096
-java dbquery "TRINITY REHAB" 4096
-java dbquery "Willandra Rowland Flat" 4096
+java hashquery "shade matters" 4096
+java hashquery "SWORDFISH CONSTRUCTIONS" 4096
+java hashquery "TRINITY REHAB" 4096
+java hashquery "Willandra Rowland Flat" 4096

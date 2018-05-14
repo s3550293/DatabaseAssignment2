@@ -10,12 +10,12 @@ import java.io.EOFException;
  *  Database Systems - HEAP IMPLEMENTATION
  */
 
-public class dbquery implements dbimpl
+public class hashquery implements dbimpl
 {
    // initialize
    public static void main(String args[])
    {
-      dbquery load = new dbquery();
+    hashquery load = new hashquery();
 
       // calculate query time
       long startTime = System.currentTimeMillis();

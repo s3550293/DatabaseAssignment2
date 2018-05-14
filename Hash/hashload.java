@@ -6,13 +6,13 @@ import java.nio.ByteBuffer;
  *  Database Systems - HEAP IMPLEMENTATION
  */
 
-public class dbload implements dbimpl
+public class hashload implements dbimpl
 {
     private Hash[] hashtable = new Hash[3940];
     // initialize
    public static void main(String args[])
    {
-      dbload load = new dbload();
+      hashload load = new hashload();
     
       // calculate load time
       long startTime = System.currentTimeMillis();
@@ -57,7 +57,7 @@ public class dbload implements dbimpl
    // read .csv file using buffered reader
    public void readFile(String filename, int pagesize)
    {
-      dbload load = new dbload();
+      hashload load = new hashload();
       File heapfile = new File(HEAP_FNAME + pagesize);
       File hashfile = new File(HASH_FNAME + pagesize);
       BufferedReader br = null;
