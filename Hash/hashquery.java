@@ -59,6 +59,10 @@ public class hashquery implements dbimpl
    }
 
    // read heapfile by page
+   /**
+    * Skips pages untill we find the one that is located in the heap index
+    * Once it is found we print then end the search
+    */
    public void readHeap(String name, int pagesize)
    {
       File heapfile = new File(HEAP_FNAME + pagesize);
@@ -77,6 +81,14 @@ public class hashquery implements dbimpl
       {
         FileInputStream fis = null;
         try{
+            /**
+             * #### New Code
+             * Reads the hash file loads in hash buckets one at a time
+             * if the hash index matches the then the function will proceed checking the
+             * name and set the offset.
+             * if it doesn't then the hash bucket will be dropped and a new one will
+             * be read from file
+             */
             fis = new FileInputStream(hashfile);
             Object obj = null;
             ObjectInputStream input = new ObjectInputStream(fis);

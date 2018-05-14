@@ -8,6 +8,9 @@ import java.nio.ByteBuffer;
 
 public class hashload implements dbimpl
 {
+    /**
+     * Hash Table that holds the buckets
+     */
     private Hash[] hashtable = new Hash[3940];
     // initialize
    public static void main(String args[])
@@ -93,6 +96,10 @@ public class hashload implements dbimpl
             }
             recCount++;
          }
+         /**
+          * CODE
+          * this saves each indavitual bucket in the array to a file
+          */
          fos_Hash = new FileOutputStream(hashfile);
          ObjectOutputStream oos = new ObjectOutputStream(fos_Hash);
          for(int i=0;i<hashtable.length;i++){
@@ -203,6 +210,11 @@ public class hashload implements dbimpl
       return bBuffer.array();
    }
 
+   /**
+    * Adds a hash index for the given business name and
+    * saves the name and pagecount to the hash key
+    * then saves the new hash index to the array
+    */
    public void addHash(String name, int pageCount){
        int hashval = name.hashCode() % 3940;
        for(int i=0;i<hashtable.length;i++){
