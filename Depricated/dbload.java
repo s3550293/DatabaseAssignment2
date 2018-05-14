@@ -27,9 +27,9 @@ public class dbload implements dbimpl {
     // }
 
     private byte[] createHash(byte[] hash, String search, int offset){
-        int hashcode = search.hashcode() % 4000
-        System.arraycopy(hashcode.getBytes(),0,hash,HASH_OFFSET,hashcode.getBytes().length);
-        System.arraycopy(offset.getBytes(),0,hash,HASH_OFFSET,hashcode.getBytes().length);
+        int hashcode = search.hashcode() % 4000;
+        System.arraycopy(intToByteArray(hashcode),0,hash,HASH_OFFSET,intToByteArray(hashcode).length);
+        System.arraycopy(intToByteArray(offset),0,hash,HASH_OFFSET,intToByteArray(offset).length);
     }
 
     /**
@@ -77,7 +77,7 @@ public class dbload implements dbimpl {
     //     }
     // }
 
-    private void addIndexToBucket(byte[][] hashBucket, byte[][] hashIndex){
+    private void addIndexToBucket(byte[][] hashBucket, byte[] hashIndex){
         boolean loop = true;
         int index = 1;
         byte[][] tempHash = null;
@@ -99,7 +99,7 @@ public class dbload implements dbimpl {
         }
     }
 
-    private void  writeHash(byte[][] hashIndex){
+    private void  writeHash(byte[] hashIndex){
         File hashfile = new File(HEAP_FNAME + pagesize + ".hash");
         FileOutputStream fos = null;
         try{
