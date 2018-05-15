@@ -6,15 +6,12 @@ public class Hash implements Serializable{
     Hash next = null;
     // Holds the Hash value and the page number as an offset
     int hashVal,offset;
-    // Holds the buisness name
-    String name;
 
     /**
      * Constructor for the hash object/bucket
      */
-    public Hash(int hashVal, String name, int offset){
+    public Hash(int hashVal, int offset){
         this.hashVal = hashVal;
-        this.name = name;
         this.offset = offset;
     }
 

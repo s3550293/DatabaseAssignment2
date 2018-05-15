@@ -1,10 +1,5 @@
 import java.nio.ByteBuffer;
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.io.EOFException;
+import java.io.*;
 
 /**
  *  Database Systems - HEAP IMPLEMENTATION
@@ -15,7 +10,7 @@ public class hashquery implements dbimpl
    // initialize
    public static void main(String args[])
    {
-    hashquery load = new hashquery();
+      hashquery load = new hashquery();
 
       // calculate query time
       long startTime = System.currentTimeMillis();
@@ -59,138 +54,88 @@ public class hashquery implements dbimpl
    }
 
    // read heapfile by page
-   /**
-    * Skips pages untill we find the one that is located in the heap index
-    * Once it is found we print then end the search
-    */
    public void readHeap(String name, int pagesize)
    {
       File heapfile = new File(HEAP_FNAME + pagesize);
       File hashfile = new File(HASH_FNAME + pagesize);
       int intSize = 4;
       int pageCount = 0;
-      int page = 0;
       int recCount = 0;
       int recordLen = 0;
       int rid = 0;
+      int offset = 0;
       int key = name.hashCode() % 3940;
       boolean isNextPage = true;
       boolean isNextRecord = true;
-      boolean loop = true;
-      try
-      {
-        FileInputStream fis = null;
-        try{
-            /**
-             * #### New Code
-             * Reads the hash file loads in hash buckets one at a time
-             * if the hash index matches the then the function will proceed checking the
-             * name and set the offset.
-             * if it doesn't then the hash bucket will be dropped and a new one will
-             * be read from file
-             */
-            fis = new FileInputStream(hashfile);
+      RandomAccessFile raf = null;
+      FileInputStream fis = null;
+      Hash hash = null;
+        try
+        {
+            raf = new RandomAccessFile(heapfile,"r");
+             // reading page by page
+            isNextRecord = true;
             Object obj = null;
-            ObjectInputStream input = new ObjectInputStream(fis);
-            while (loop){
-                obj = input.readObject();
-                if (obj instanceof Hash) {
-                    Hash hash = (Hash) obj;
-                    if(key == hash.hashVal){
-                        while(loop){
-                            if(hash.name.equals(name)){
-                                page = hash.offset;
-                                loop = false;
-                            }else if(hash.next == null){
-                                loop = false;
-                            }else{
-                                hash = hash.next;
+            try{
+                fis = new FileInputStream(hashfile);
+                ObjectInputStream input = new ObjectInputStream(fis);
+                while (true){
+                    obj = input.readObject();
+                    if(obj!=null){
+                        if (obj instanceof Hash) {
+                            hash = (Hash) obj;
+                            if(key == hash.hashVal){
+                                break;
                             }
                         }
                     }
                 }
+            }catch (ClassNotFoundException cnfe){}
+            catch (EOFException eof){
+                System.out.println("End of file, record not found");
             }
-        }catch (ClassNotFoundException cnfe){}
-        catch (EOFException eof){
-            System.out.println("End of file, record not found");
-        }
-        
-        fis = new FileInputStream(heapfile);
-         // reading page by page
-         boolean exit = false;
-         while (isNextPage)
-         {
-            byte[] bPage = new byte[pagesize];
-            byte[] bPageNum = new byte[intSize];
-            fis.read(bPage, 0, pagesize);
-            if(pageCount == page){
-                System.arraycopy(bPage, bPage.length-intSize, bPageNum, 0, intSize);
-
-                // reading by record, return true to read the next record
-                isNextRecord = true;
-                while (isNextRecord)
-                {
-                    byte[] bRecord = new byte[RECORD_SIZE];
-                    byte[] bRid = new byte[intSize];
-                    try
-                    {
-                        System.arraycopy(bPage, recordLen, bRecord, 0, RECORD_SIZE);
-                        System.arraycopy(bRecord, 0, bRid, 0, intSize);
-                        rid = ByteBuffer.wrap(bRid).getInt();
-                        if (rid != recCount)
-                        {
-                            isNextRecord = false;
-                        }
-                        else
-                        {
-                            exit = printRecord(bRecord, name);
-                            recordLen += RECORD_SIZE;
-                            if(exit){
-                                return;
-                            }
-                        }
-                        recCount++;
-                        // if recordLen exceeds pagesize, catch this to reset to next page
-                    }
-                    catch (ArrayIndexOutOfBoundsException e)
-                    {
-                        isNextRecord = false;
-                        recordLen = 0;
-                        recCount = 0;
-                        rid = 0;
-                    }
-                }
-            }
-            // check to complete all pages
-            if (ByteBuffer.wrap(bPageNum).getInt() != pageCount)
+            while (isNextRecord)
             {
-               isNextPage = false;
+                offset = hash.offset;
+                fis = new FileInputStream(hashfile);
+                byte[] bRecord = new byte[RECORD_SIZE];
+                byte[] bRid = new byte[intSize];
+                raf.seek(offset);
+                raf.read(bRecord, 0, RECORD_SIZE);
+                isNextRecord = printRecord(bRecord, name);
+                if(hash.next != null){
+                    hash = hash.next;
+                    System.out.println("Next");
+                }else{
+                    break;
+                }
             }
-            pageCount++;
-         }
-      }
-      catch (FileNotFoundException e)
-      {
-         System.out.println("File: " + HEAP_FNAME + pagesize + " not found.");
-      }
-      catch (IOException e)
-      {
-         e.printStackTrace();
-      }
-   }
+        }
+        catch (FileNotFoundException e)
+        {
+           System.out.println("File: " + HEAP_FNAME + pagesize + " not found.");
+        }
+        catch (IOException e)
+        {
+           e.printStackTrace();
+        }
+    }
 
    // returns records containing the argument text from shell
-   public boolean printRecord(byte[] rec, String input)
-   {
-      String record = new String(rec);
-      String BN_NAME = record
-                         .substring(RID_SIZE+REGISTER_NAME_SIZE,
-                          RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE);
-      if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
-      {
-         System.out.println(record);
-         return true;
-      }
-      return false;
+    public boolean printRecord(byte[] rec, String name)
+    {
+        String record = new String(rec);
+        String BN_NAME = record.substring(RID_SIZE+REGISTER_NAME_SIZE,
+                                        RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE);
+        String new_Val = BN_NAME.replaceAll("\0+$", "");
+        if(new_Val.equals(name)){
+            System.out.println(record);
+            return false;
+        }
+        // if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
+        // {
+        //    
+        // }
+        return true;
    }
 }
