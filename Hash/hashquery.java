@@ -56,36 +56,32 @@ public class hashquery implements dbimpl
    // read heapfile by page
    public void readHeap(String name, int pagesize)
    {
-      File heapfile = new File(HEAP_FNAME + pagesize);
-      File hashfile = new File(HASH_FNAME + pagesize);
-      int intSize = 4;
-      int pageCount = 0;
-      int recCount = 0;
-      int recordLen = 0;
-      int rid = 0;
-      int offset = 0;
-      int key = name.hashCode() % 3940;
-      boolean isNextPage = true;
-      boolean isNextRecord = true;
-      RandomAccessFile raf = null;
-      FileInputStream fis = null;
-      Hash hash = null;
+        File heapfile = new File(HEAP_FNAME + pagesize);
+        File hashfile = new File(HASH_FNAME + pagesize);
+        int intSize = 4;
+        int offset = 0;
+        int key = Math.abs(name.hashCode() % 13107);
+        boolean isNextRecord = true;
+        RandomAccessFile raf = null;
+        FileInputStream fis = null;
+        Hash hash = null;
+        boolean loop = true;
+        int index = 0;
         try
         {
-            raf = new RandomAccessFile(heapfile,"r");
              // reading page by page
             isNextRecord = true;
             Object obj = null;
             try{
                 fis = new FileInputStream(hashfile);
                 ObjectInputStream input = new ObjectInputStream(fis);
-                while (true){
+                while(loop){
                     obj = input.readObject();
                     if(obj!=null){
                         if (obj instanceof Hash) {
                             hash = (Hash) obj;
                             if(key == hash.hashVal){
-                                break;
+                                loop = false;
                             }
                         }
                     }
@@ -94,6 +90,9 @@ public class hashquery implements dbimpl
             catch (EOFException eof){
                 System.out.println("End of file, record not found");
             }
+
+            raf = new RandomAccessFile(heapfile,"r");
+
             while (isNextRecord)
             {
                 offset = hash.offset;
@@ -105,7 +104,7 @@ public class hashquery implements dbimpl
                 isNextRecord = printRecord(bRecord, name);
                 if(hash.next != null){
                     hash = hash.next;
-                    System.out.println("Next");
+                    // System.out.println("Next");
                 }else{
                     break;
                 }
@@ -127,15 +126,11 @@ public class hashquery implements dbimpl
         String record = new String(rec);
         String BN_NAME = record.substring(RID_SIZE+REGISTER_NAME_SIZE,
                                         RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE);
-        String new_Val = BN_NAME.replaceAll("\0+$", "");
-        if(new_Val.equals(name)){
+        if (BN_NAME.toLowerCase().contains(name.toLowerCase()))
+        {
             System.out.println(record);
             return false;
         }
-        // if (BN_NAME.toLowerCase().contains(input.toLowerCase()))
-        // {
-        //    
-        // }
         return true;
    }
 }

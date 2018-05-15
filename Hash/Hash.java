@@ -22,8 +22,7 @@ public class Hash implements Serializable{
     public void put(Hash current, Hash nextHash){
         while(true){
             if(current.next == null){
-                // current.prev = nextHash;
-                nextHash.next = nextHash;
+                current.next = nextHash;
                 break;
             }else{
                 current = current.next;

@@ -10,7 +10,7 @@ public class hashload implements dbimpl
     /**
      * Hash Table that holds the buckets
      */
-    private Hash[] hashtable = new Hash[3940];
+    private Hash[] hashtable = new Hash[13107];
 
    // initialize
    public static void main(String args[])
@@ -22,7 +22,7 @@ public class hashload implements dbimpl
       load.readArguments(args);
       long endTime = System.currentTimeMillis();
 
-      System.out.println("Query time: " + (endTime - startTime) + "ms");
+      System.out.println("Load time: " + (endTime - startTime) + "ms");
    }
 
 
@@ -136,6 +136,7 @@ public class hashload implements dbimpl
 		  	for(int i=0;i<hashtable.length;i++){
 				oos.writeObject(hashtable[i]);
 			}
+			oos.close();
 		}catch (FileNotFoundException e){
 			System.out.println("File: " + hashfile + " not found.");
 		}
@@ -156,17 +157,13 @@ public class hashload implements dbimpl
     	String BN_NAME = record.substring(RID_SIZE+REGISTER_NAME_SIZE,
 							RID_SIZE+REGISTER_NAME_SIZE+BN_NAME_SIZE);
 		String new_Val = BN_NAME.replaceAll("\0+$", "");
-				
-		int hashval = new_Val.hashCode() % 3940;
-
-        for(int i=0;i<hashtable.length;i++){
-            if(hashtable[hashval] == null){
-                hashtable[hashval] = new Hash(hashval, offset);
-                break;
-            }else if(hashtable[hashval].hashVal == hashval){
-                hashtable[hashval].put(hashtable[hashval], new Hash(hashval ,offset));
-                break;
-            }
-        }
+		int hashval = Math.abs(new_Val.hashCode() % 13107);
+		// System.out.println(hashval);
+		if(hashtable[hashval] == null){
+			hashtable[hashval] = new Hash(hashval, offset);
+		}
+		else {
+			hashtable[hashval].put(hashtable[hashval], new Hash(hashval ,offset));
+		}
     }
 }
